@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
         askRequiredPermissions()
         setContent {
             ExpenseIQ_CleanTheme {
-                AddExpenseScreen()
+                DashboardScreen()
             }
         }
     }
