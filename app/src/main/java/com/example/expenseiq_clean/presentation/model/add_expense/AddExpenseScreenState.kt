@@ -5,5 +5,6 @@ data class AddExpenseScreenState(
     val selectedExpenseTypeIndex : Int = 0,
     val selectedDebitTypeIndex : Int = 0,
     val selectedSpentViaIndex : Int = 0,
-    val selectedDate: String = ""
+    val selectedDate: String = "",
+    val shouldShowDatePickerDialog: Boolean = false
 )

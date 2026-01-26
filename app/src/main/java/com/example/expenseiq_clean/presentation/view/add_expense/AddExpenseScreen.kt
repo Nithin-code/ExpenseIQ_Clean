@@ -2,6 +2,7 @@ package com.example.expenseiq_clean.presentation.view.add_expense
 
 import android.graphics.drawable.Icon
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,25 +54,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expenseiq_clean.R
 import com.example.expenseiq_clean.domain.model.ChipType
 import com.example.expenseiq_clean.domain.model.DebitedCategory
 import com.example.expenseiq_clean.domain.model.ExpenseCategory
 import com.example.expenseiq_clean.domain.model.SpentViaCategory
+import com.example.expenseiq_clean.presentation.viewmodel.add_expense.AddExpenseViewModel
 import com.example.expenseiq_clean.ui.theme.AppTheme
+import org.koin.androidx.compose.koinViewModel
 import java.util.Date
 
 @Composable
-fun AddExpenseScreen(
+fun AddExpenseScreen() {
 
-) {
-    var amount by remember {
-        mutableStateOf("")
-    }
+    val viewModel = koinViewModel<AddExpenseViewModel>()
 
-    var isDatePickerVisible by remember {
-        mutableStateOf(false)
-    }
+    val screenState = viewModel.addExpenseScreenUIState.collectAsStateWithLifecycle()
 
     Scaffold { paddingValues ->
         Column(
@@ -89,43 +88,55 @@ fun AddExpenseScreen(
             TopAppBar()
 
             AmountEditText(
-                amountEntered = amount,
+                amountEntered = screenState.value.enteredAmount,
                 onAmountChanged = { it ->
-                    amount = it
+                   viewModel.onAmountChange(it)
                 }
             )
 
             HorizontalChipSlider(
+                selectedExpenseCategoryIndex = screenState.value.selectedExpenseTypeIndex,
                 title = "Amount Spent For: ",
                 chipType = ChipType.ExpenseCategory,
-                onChipSelected = {
-
+                onExpenseChipSelected = {
+                    viewModel.onChipSelected(
+                        index = it,
+                        chipType = ChipType.ExpenseCategory
+                    )
                 }
             )
 
             DatePickerRow(
-                isDatePickerVisible = isDatePickerVisible,
+                isDatePickerVisible = screenState.value.shouldShowDatePickerDialog,
                 onNegativeButtonClicked = {
-                    isDatePickerVisible = false
+                    viewModel.onDatePickerSelected(null)
                 },
                 onPositiveButtonClicked = {
-                    isDatePickerVisible = true
+                    viewModel.onDatePickerSelected(it)
                 }
             )
 
             HorizontalChipSlider(
+                selectedDebitCategoryIndex = screenState.value.selectedDebitTypeIndex,
                 title = "Debited / Credited : ",
                 chipType = ChipType.DebitedCategory,
-                onChipSelected = {
-
+                onDebitChipSelected = {
+                    viewModel.onChipSelected(
+                        index = it,
+                        chipType = ChipType.DebitedCategory
+                    )
                 }
             )
 
             HorizontalChipSlider(
+                selectedSpentViaCategoryIndex = screenState.value.selectedSpentViaIndex,
                 title = "Spent Via : ",
                 chipType = ChipType.SpentViaCategory,
-                onChipSelected = {
-
+                onSpentViaChipSelected = {
+                    viewModel.onChipSelected(
+                        index = it,
+                        chipType = ChipType.SpentViaCategory
+                    )
                 }
             )
 
@@ -135,7 +146,7 @@ fun AddExpenseScreen(
                     .clip(shape = RoundedCornerShape(12.dp))
                     .background(color = AppTheme.colors.incomeGreen)
                     .clickable{
-
+                        viewModel.onSaveButtonClicked()
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -221,10 +232,14 @@ fun AmountEditText(
 
 @Composable
 fun HorizontalChipSlider(
-    selectedIndex: Int = 0,
+    selectedExpenseCategoryIndex: Int = 0,
+    selectedDebitCategoryIndex: Int = 0,
+    selectedSpentViaCategoryIndex: Int = 0,
     title: String = "",
     chipType: ChipType,
-    onChipSelected: (Int) -> Unit
+    onExpenseChipSelected: ((Int) -> Unit)? = null,
+    onDebitChipSelected: ((Int) -> Unit)? = null,
+    onSpentViaChipSelected: ((Int) -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -247,13 +262,20 @@ fun HorizontalChipSlider(
         ) {
             when (chipType) {
                 is ChipType.DebitedCategory -> {
-                    DebitedCategory.entries.forEach { debitedCategory ->
+                    DebitedCategory.entries.forEachIndexed { index,debitedCategory ->
                         Box(
                             modifier = Modifier
                                 .wrapContentHeight()
                                 .wrapContentWidth()
                                 .clip(shape = RoundedCornerShape(50))
-                                .background(color = AppTheme.colors.cardBackground),
+                                .background(color = AppTheme.colors.cardBackground)
+                                .border(
+                                    width = 1.dp,
+                                    color = if (index == selectedDebitCategoryIndex) AppTheme.colors.incomeGreen else AppTheme.colors.cardBackground,
+                                    shape = RoundedCornerShape(50)
+                                ).clickable{
+                                    onDebitChipSelected?.invoke(index)
+                                },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -262,7 +284,7 @@ fun HorizontalChipSlider(
                                 text = debitedCategory.type,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = 14.sp,
-                                color = AppTheme.colors.textPrimary
+                                color = if (index == selectedDebitCategoryIndex) AppTheme.colors.incomeGreen else AppTheme.colors.textPrimary
                             )
 
                         }
@@ -270,13 +292,20 @@ fun HorizontalChipSlider(
                 }
 
                 is ChipType.ExpenseCategory -> {
-                    ExpenseCategory.entries.forEach { expenseCategory ->
+                    ExpenseCategory.entries.forEachIndexed { index, expenseCategory ->
                         Box(
                             modifier = Modifier
                                 .wrapContentHeight()
                                 .wrapContentWidth()
                                 .clip(shape = RoundedCornerShape(50))
-                                .background(color = AppTheme.colors.cardBackground),
+                                .background(color = AppTheme.colors.cardBackground)
+                                .border(
+                                    width = 1.dp,
+                                    color = if (index == selectedExpenseCategoryIndex) AppTheme.colors.incomeGreen else AppTheme.colors.cardBackground,
+                                    shape = RoundedCornerShape(50)
+                                ).clickable{
+                                    onExpenseChipSelected?.invoke(index)
+                                },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -285,7 +314,7 @@ fun HorizontalChipSlider(
                                 text = expenseCategory.type,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = 14.sp,
-                                color = AppTheme.colors.textPrimary
+                                color = if (index == selectedExpenseCategoryIndex) AppTheme.colors.incomeGreen else AppTheme.colors.textPrimary
                             )
 
                         }
@@ -293,13 +322,20 @@ fun HorizontalChipSlider(
                 }
 
                 is ChipType.SpentViaCategory -> {
-                    SpentViaCategory.entries.forEach { spentViaCategory ->
+                    SpentViaCategory.entries.forEachIndexed { index, spentViaCategory ->
                         Box(
                             modifier = Modifier
                                 .wrapContentHeight()
                                 .wrapContentWidth()
                                 .clip(shape = RoundedCornerShape(50))
-                                .background(color = AppTheme.colors.cardBackground),
+                                .background(color = AppTheme.colors.cardBackground)
+                                .border(
+                                    width = 1.dp,
+                                    color = if (index == selectedSpentViaCategoryIndex) AppTheme.colors.incomeGreen else AppTheme.colors.cardBackground,
+                                    shape = RoundedCornerShape(50)
+                                ).clickable{
+                                    onSpentViaChipSelected?.invoke(index)
+                                },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -308,7 +344,7 @@ fun HorizontalChipSlider(
                                 text = spentViaCategory.type,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = 14.sp,
-                                color = AppTheme.colors.textPrimary
+                                color = if (index == selectedSpentViaCategoryIndex) AppTheme.colors.incomeGreen else AppTheme.colors.textPrimary
                             )
                         }
                     }
@@ -323,7 +359,7 @@ fun HorizontalChipSlider(
 fun DatePickerRow(
     modifier: Modifier = Modifier,
     isDatePickerVisible: Boolean = false,
-    onPositiveButtonClicked: () -> Unit,
+    onPositiveButtonClicked: (String) -> Unit,
     onNegativeButtonClicked : () -> Unit
 ) {
 
@@ -348,7 +384,7 @@ fun DatePickerRow(
                 modifier = Modifier
                     .size(24.dp)
                     .clickable{
-                        onPositiveButtonClicked.invoke()
+                        onNegativeButtonClicked.invoke()
                     },
                 contentDescription = null,
                 tint = AppTheme.colors.textPrimary
@@ -420,7 +456,9 @@ fun DatePickerRow(
             TextButton(
                 onClick = {
                     datePickerState.selectedDateMillis?.let { it->
-                        println("selected date is ${Date(it)}")
+                        onPositiveButtonClicked.invoke(
+                            "${Date(it)}"
+                        )
                     }
                 }
             ) {
