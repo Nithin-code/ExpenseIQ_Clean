@@ -22,7 +22,6 @@ class AddExpenseViewModel(
 
     val addExpenseScreenUIState = _addExpenseScreenUIState
 
-
     fun onAmountChange(amount : String) {
         viewModelScope.launch {
             _addExpenseScreenUIState.update { state->

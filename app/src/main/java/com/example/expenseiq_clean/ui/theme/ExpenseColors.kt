@@ -47,7 +47,7 @@ val DarkPalette = ExpenseColors(
     cardBackground = Charcoal,
     textPrimary = White,
     textSecondary = LightGray,
-    incomeGreen = Color(0xFF81C784), // Lighter green for visibility
+    incomeGreen = Green500.copy(alpha = 0.9f), // Lighter green for visibility
     expenseRed = Color(0xFFE57373),  // Lighter red for visibility
     isDark = true
 )
