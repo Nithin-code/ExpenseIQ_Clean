@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.expenseiq_clean.navigation.NavigationGraph
 import com.example.expenseiq_clean.presentation.view.add_expense.AddExpenseScreen
 import com.example.expenseiq_clean.presentation.view.dashboard.DashboardScreen
 import com.example.expenseiq_clean.ui.theme.ExpenseIQ_CleanTheme
@@ -26,7 +27,7 @@ class MainActivity : ComponentActivity() {
         askRequiredPermissions()
         setContent {
             ExpenseIQ_CleanTheme {
-                DashboardScreen()
+                NavigationGraph()
             }
         }
     }

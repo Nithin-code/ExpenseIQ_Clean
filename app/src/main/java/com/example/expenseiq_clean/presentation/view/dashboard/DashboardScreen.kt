@@ -1,5 +1,7 @@
 package com.example.expenseiq_clean.presentation.view.dashboard
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,11 +46,15 @@ import com.example.expenseiq_clean.ui.theme.AppTheme
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun DashboardScreen() {
+fun DashboardScreen(
+    onAddButtonClicked: ()-> Unit
+) {
 
     val dashBoardViewModel = koinViewModel<DashBoardViewModel>()
 
-    val screenState = dashBoardViewModel.dashBoardScreenState.collectAsStateWithLifecycle()
+    val screenState = dashBoardViewModel
+        .dashBoardScreenState
+        .collectAsStateWithLifecycle()
 
     Scaffold(
         floatingActionButton = {
@@ -57,6 +63,9 @@ fun DashboardScreen() {
                     .size(44.dp)
                     .clip(shape = CircleShape)
                     .background(color = AppTheme.colors.cardBackground)
+                    .clickable{
+                        onAddButtonClicked.invoke()
+                    }
             ){
                 Icon(
                     painter = painterResource(R.drawable.add_icon_24),
@@ -67,50 +76,59 @@ fun DashboardScreen() {
             }
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = AppTheme.colors.background)
-                .padding(
-                    top = paddingValues.calculateTopPadding(),
-                    bottom = paddingValues.calculateBottomPadding()
-                )
-                .padding(horizontal = 16.dp)
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
+        AnimatedVisibility(
+            visible = true,
+        ) {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                CircularCardImage(
-                    painter = painterResource(R.drawable.settings_icon),
-                    onCardClicked = {}
+                    .fillMaxSize()
+                    .background(color = AppTheme.colors.background)
+                    .padding(
+                        top = paddingValues.calculateTopPadding(),
+                        bottom = paddingValues.calculateBottomPadding()
+                    )
+                    .padding(horizontal = 16.dp)
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    CircularCardImage(
+                        painter = painterResource(R.drawable.settings_icon),
+                        onCardClicked = {
+
+                        }
+                    )
+                    HeaderText(
+                        viewModel = dashBoardViewModel
+                    )
+                    CircularCardImage(
+                        painter = painterResource(R.drawable.notification_icon),
+                        onCardClicked = {}
+                    )
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+                SpendDetails(
+                    title = screenState.value.totalAmount
                 )
-                HeaderText(
-                    viewModel = dashBoardViewModel
-                )
-                CircularCardImage(
-                    painter = painterResource(R.drawable.notification_icon),
-                    onCardClicked = {}
+                Spacer(modifier = Modifier.height(12.dp))
+                SpendAnalysisDetails()
+                Spacer(modifier = Modifier.height(24.dp))
+                MiniStatementHeader()
+                Spacer(modifier = Modifier.height(12.dp))
+                MiniStatementList(
+                    modifier = Modifier.weight(1f),
+                    expenseList = screenState.value.topExpensesList
                 )
             }
-            Spacer(modifier = Modifier.height(24.dp))
-            SpendDetails(
-                title = screenState.value.totalAmount
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            SpendAnalysisDetails()
-            Spacer(modifier = Modifier.height(24.dp))
-            MiniStatementHeader()
-            Spacer(modifier = Modifier.height(12.dp))
-            MiniStatementList(
-                modifier = Modifier.weight(1f),
-                expenseList = screenState.value.topExpensesList
-            )
         }
+
+
     }
 }
 
@@ -400,5 +418,9 @@ fun TransactionDetail(
 @Preview(showBackground = true)
 @Composable
 fun Prev() {
-    DashboardScreen()
+    DashboardScreen(
+        onAddButtonClicked = {
+
+        }
+    )
 }

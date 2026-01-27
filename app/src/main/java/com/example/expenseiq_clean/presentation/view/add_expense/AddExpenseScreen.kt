@@ -1,6 +1,12 @@
 package com.example.expenseiq_clean.presentation.view.add_expense
 
 import android.graphics.drawable.Icon
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,6 +37,7 @@ import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -38,6 +45,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -65,14 +74,49 @@ import com.example.expenseiq_clean.ui.theme.AppTheme
 import org.koin.androidx.compose.koinViewModel
 import java.util.Date
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddExpenseScreen() {
+fun AddExpenseScreen(
+    onBackArrowClicked: ()-> Unit
+) {
 
     val viewModel = koinViewModel<AddExpenseViewModel>()
 
     val screenState = viewModel.addExpenseScreenUIState.collectAsStateWithLifecycle()
 
-    Scaffold { paddingValues ->
+
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                modifier = Modifier.fillMaxWidth(),
+                title = {
+                    Text(
+                        text = "Add Your Expense",
+                        fontSize = 22.sp,
+                        color = AppTheme.colors.textPrimary,
+                    )
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            onBackArrowClicked.invoke()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = AppTheme.colors.textPrimary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = AppTheme.colors.incomeGreen,
+                )
+            )
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -85,12 +129,13 @@ fun AddExpenseScreen() {
                 .verticalScroll(state = rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            TopAppBar()
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             AmountEditText(
                 amountEntered = screenState.value.enteredAmount,
                 onAmountChanged = { it ->
-                   viewModel.onAmountChange(it)
+                    viewModel.onAmountChange(it)
                 }
             )
 
@@ -168,17 +213,23 @@ fun AddExpenseScreen() {
 
 @Composable
 fun TopAppBar(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onBackArrowClicked: () -> Unit
 ) {
     Row(
         modifier = modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .background(color = AppTheme.colors.incomeGreen),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Default.ArrowBack,
             contentDescription = null,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier
+                .size(24.dp)
+                .clickable{
+                    onBackArrowClicked.invoke()
+                },
             tint = AppTheme.colors.textPrimary
         )
 
@@ -202,31 +253,45 @@ fun AmountEditText(
     onAmountChanged: (String) -> Unit
 ) {
 
-    OutlinedTextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        value = amountEntered,
-        onValueChange = {
-            onAmountChanged.invoke(it)
-        },
-        label = {
-            Text("Enter Amount")
-        },
-        keyboardOptions = KeyboardOptions.Default.copy(
-            keyboardType = KeyboardType.Number
-        ),
-        maxLines = 1,
-        shape = RoundedCornerShape(12.dp),
-        colors = TextFieldDefaults.colors(
-            focusedTextColor = AppTheme.colors.textPrimary,
-            unfocusedTextColor = AppTheme.colors.textSecondary,
-            focusedContainerColor = AppTheme.colors.cardBackground,
-            unfocusedContainerColor = AppTheme.colors.cardBackground,
-            focusedLabelColor = AppTheme.colors.textSecondary,
-            unfocusedLabelColor = AppTheme.colors.textSecondary
+    Column(modifier = Modifier
+        .fillMaxWidth()
+    ) {
+
+        Text(
+            text = "Enter Your Amount: ",
+            color = AppTheme.colors.textPrimary,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal
         )
-    )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            value = amountEntered,
+            onValueChange = {
+                onAmountChanged.invoke(it)
+            },
+            label = {
+                Text("Enter Amount")
+            },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number
+            ),
+            maxLines = 1,
+            shape = RoundedCornerShape(12.dp),
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = AppTheme.colors.textPrimary,
+                unfocusedTextColor = AppTheme.colors.textSecondary,
+                focusedContainerColor = AppTheme.colors.cardBackground,
+                unfocusedContainerColor = AppTheme.colors.cardBackground,
+                focusedLabelColor = AppTheme.colors.textSecondary,
+                unfocusedLabelColor = AppTheme.colors.textSecondary
+            )
+        )
+    }
 
 }
 
@@ -504,5 +569,5 @@ fun DatePickerRow(
 @Composable
 @Preview(showBackground = true)
 fun AddExpensePreview() {
-    AddExpenseScreen()
+    AddExpenseScreen(onBackArrowClicked = {})
 }
