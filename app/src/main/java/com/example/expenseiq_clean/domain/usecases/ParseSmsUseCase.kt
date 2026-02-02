@@ -14,7 +14,8 @@ class ParseSmsUseCase(
         toAccount = "",
         isCredited = false,
         date = "",
-        category = ""
+        category = "",
+        dateMillis = 0L
     )
 
     suspend fun execute(sender: String, body: String) {

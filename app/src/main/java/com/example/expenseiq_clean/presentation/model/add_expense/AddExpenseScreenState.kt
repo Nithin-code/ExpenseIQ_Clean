@@ -2,9 +2,17 @@ package com.example.expenseiq_clean.presentation.model.add_expense
 
 data class AddExpenseScreenState(
     val enteredAmount : String = "",
-    val selectedExpenseTypeIndex : Int = 0,
-    val selectedDebitTypeIndex : Int = 0,
-    val selectedSpentViaIndex : Int = 0,
+    //to Account
+    val selectedExpenseType : String = "",
+    val selectedDebitType : String = "",
+    //from Account
+    val selectedSpentVia : String = "",
     val selectedDate: String = "",
-    val shouldShowDatePickerDialog: Boolean = false
+    val selectedDateMillis: Long=0L,
+    val shouldShowDatePickerDialog: Boolean = false,
+    val showBanner: Boolean = false,
+    val bannerText: String = "",
+    val selectedDayDate: String = "Day",
+    val selectedMonth: String = "Mon",
+    val selectedYear: String = "year"
 )
