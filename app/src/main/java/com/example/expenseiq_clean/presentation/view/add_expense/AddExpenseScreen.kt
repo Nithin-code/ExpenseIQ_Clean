@@ -31,6 +31,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerDefaults
@@ -58,6 +59,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -77,14 +79,14 @@ import java.util.Date
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddExpenseScreen(
-    onBackArrowClicked: ()-> Unit
+    onBackArrowClicked: () -> Unit
 ) {
 
     val viewModel = koinViewModel<AddExpenseViewModel>()
 
-    val screenState = viewModel.addExpenseScreenUIState.collectAsStateWithLifecycle()
-
-
+    val screenState = viewModel
+        .addExpenseScreenUIState
+        .collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -92,7 +94,7 @@ fun AddExpenseScreen(
                 modifier = Modifier.fillMaxWidth(),
                 title = {
                     Text(
-                        text = "Add Your Expense",
+                        text = "Enter Your Expense",
                         fontSize = 22.sp,
                         color = AppTheme.colors.textPrimary,
                     )
@@ -104,7 +106,7 @@ fun AddExpenseScreen(
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.Default.KeyboardArrowLeft,
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
                             tint = AppTheme.colors.textPrimary
@@ -117,6 +119,7 @@ fun AddExpenseScreen(
             )
         }
     ) { paddingValues ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -125,140 +128,182 @@ fun AddExpenseScreen(
                     top = paddingValues.calculateTopPadding(),
                     bottom = paddingValues.calculateBottomPadding()
                 )
-                .padding(horizontal = 24.dp)
                 .verticalScroll(state = rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            AmountEditText(
-                amountEntered = screenState.value.enteredAmount,
-                onAmountChanged = { it ->
-                    viewModel.onAmountChange(it)
-                }
-            )
-
-            HorizontalChipSlider(
-                selectedExpenseCategoryIndex = screenState.value.selectedExpenseTypeIndex,
-                title = "Amount Spent For: ",
-                chipType = ChipType.ExpenseCategory,
-                onExpenseChipSelected = {
-                    viewModel.onChipSelected(
-                        index = it,
-                        chipType = ChipType.ExpenseCategory
-                    )
-                }
-            )
-
-            DatePickerRow(
-                isDatePickerVisible = screenState.value.shouldShowDatePickerDialog,
-                onNegativeButtonClicked = {
-                    viewModel.onDatePickerSelected(null)
-                },
-                onPositiveButtonClicked = {
-                    viewModel.onDatePickerSelected(it)
-                }
-            )
-
-            HorizontalChipSlider(
-                selectedDebitCategoryIndex = screenState.value.selectedDebitTypeIndex,
-                title = "Debited / Credited : ",
-                chipType = ChipType.DebitedCategory,
-                onDebitChipSelected = {
-                    viewModel.onChipSelected(
-                        index = it,
-                        chipType = ChipType.DebitedCategory
-                    )
-                }
-            )
-
-            HorizontalChipSlider(
-                selectedSpentViaCategoryIndex = screenState.value.selectedSpentViaIndex,
-                title = "Spent Via : ",
-                chipType = ChipType.SpentViaCategory,
-                onSpentViaChipSelected = {
-                    viewModel.onChipSelected(
-                        index = it,
-                        chipType = ChipType.SpentViaCategory
-                    )
-                }
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(shape = RoundedCornerShape(12.dp))
-                    .background(color = AppTheme.colors.incomeGreen)
-                    .clickable{
-                        viewModel.onSaveButtonClicked()
-                    },
-                contentAlignment = Alignment.Center
+            AnimatedVisibility(
+                visible = screenState.value.showBanner
             ) {
-                Text(
+                Row(
                     modifier = Modifier
-                        .padding(
-                            vertical = 12.dp
+                        .fillMaxWidth()
+                        .background(
+                            color = AppTheme.colors.expenseRed.copy(alpha = 0.8f)
                         ),
-                    text = "Save",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = AppTheme.colors.textPrimary
-                )
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+
+                    Text(
+                        modifier = Modifier
+                            .padding(vertical = 12.dp),
+                        text = "Please Enter Valid Expense",
+                        fontSize = 16.sp,
+                        color = AppTheme.colors.textPrimary
+                    )
+                }
+
             }
 
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = AppTheme.colors.background)
+                    .padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                CustomEditText(
+                    title = "Enter Your Amount: ",
+                    label = "Amount",
+                    amountEntered = screenState.value.enteredAmount,
+                    onAmountChanged = { it ->
+                        viewModel.onAmountChange(it)
+                    }
+                )
+
+                HorizontalChipSlider(
+                    selectedExpenseCategoryName = screenState.value.selectedExpenseType,
+                    title = "Amount Spent For: ",
+                    chipType = ChipType.ExpenseCategory,
+                    onExpenseChipSelected = {
+                        viewModel.onChipSelected(
+                            name = it,
+                            chipType = ChipType.ExpenseCategory
+                        )
+                    }
+                )
+
+                AnimatedVisibility(
+                    visible = screenState.value.selectedExpenseType == ExpenseCategory.OTHERS.type
+                ) {
+                    CustomEditText(
+                        title = "Amount Send To: ",
+                        amountEntered = screenState.value.enteredAmount,
+                        onAmountChanged = { it ->
+                            viewModel.onAmountChange(it)
+                        },
+                        label = "Name",
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Next
+                        )
+                    )
+                }
+
+                DatePickerRow(
+                    isDatePickerVisible = screenState.value.shouldShowDatePickerDialog,
+                    onNegativeButtonClicked = {
+                        viewModel.onDatePickerSelected(null)
+                    },
+                    onPositiveButtonClicked = { dateStr, dateMillis ->
+                        viewModel.onDatePickerSelected(dateMillis)
+                    },
+                    dayText = screenState.value.selectedDayDate,
+                    monthText = screenState.value.selectedMonth,
+                    yearText = screenState.value.selectedYear,
+                )
+
+                HorizontalChipSlider(
+                    selectedDebitCategoryName = screenState.value.selectedDebitType,
+                    title = "Debited / Credited : ",
+                    chipType = ChipType.DebitedCategory,
+                    onDebitChipSelected = {
+                        viewModel.onChipSelected(
+                            name = it,
+                            chipType = ChipType.DebitedCategory
+                        )
+                    }
+                )
+
+                HorizontalChipSlider(
+                    selectedSpentViaCategoryName = screenState.value.selectedSpentVia,
+                    title = "Spent Via : ",
+                    chipType = ChipType.SpentViaCategory,
+                    onSpentViaChipSelected = {
+                        viewModel.onChipSelected(
+                            name = it,
+                            chipType = ChipType.SpentViaCategory
+                        )
+                    }
+                )
+
+                AnimatedVisibility(
+                    visible = screenState.value.selectedSpentVia == SpentViaCategory.OTHERS.type
+                ) {
+                    CustomEditText(
+                        title = "Amount Sent From: ",
+                        amountEntered = screenState.value.enteredAmount,
+                        onAmountChanged = { it ->
+                            viewModel.onAmountChange(it)
+                        },
+                        label = "Name",
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Next
+                        )
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(shape = RoundedCornerShape(12.dp))
+                        .background(color = AppTheme.colors.incomeGreen)
+                        .clickable {
+                            viewModel.onSaveButtonClicked(
+                                navigateBack = {
+                                    onBackArrowClicked.invoke()
+                                }
+                            )
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(
+                                vertical = 12.dp
+                            ),
+                        text = "Save",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = AppTheme.colors.textPrimary
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun TopAppBar(
-    modifier: Modifier = Modifier,
-    onBackArrowClicked: () -> Unit
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(color = AppTheme.colors.incomeGreen),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Default.ArrowBack,
-            contentDescription = null,
-            modifier = Modifier
-                .size(24.dp)
-                .clickable{
-                    onBackArrowClicked.invoke()
-                },
-            tint = AppTheme.colors.textPrimary
-        )
-
-        Spacer(
-            modifier = Modifier.width(24.dp)
-        )
-
-        Text(
-            text = "Add Your Expense",
-            fontSize = 22.sp,
-            color = AppTheme.colors.textPrimary,
-        )
-
-    }
-}
-
-
-@Composable
-fun AmountEditText(
+fun CustomEditText(
+    title: String = "",
     amountEntered: String = "",
-    onAmountChanged: (String) -> Unit
+    onAmountChanged: (String) -> Unit,
+    label: String = "",
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default.copy(
+        keyboardType = KeyboardType.Number
+    ),
 ) {
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
     ) {
 
         Text(
-            text = "Enter Your Amount: ",
+            text = title,
             color = AppTheme.colors.textPrimary,
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal
@@ -275,11 +320,9 @@ fun AmountEditText(
                 onAmountChanged.invoke(it)
             },
             label = {
-                Text("Enter Amount")
+                Text(label)
             },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Number
-            ),
+            keyboardOptions = keyboardOptions,
             maxLines = 1,
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
@@ -297,14 +340,14 @@ fun AmountEditText(
 
 @Composable
 fun HorizontalChipSlider(
-    selectedExpenseCategoryIndex: Int = 0,
-    selectedDebitCategoryIndex: Int = 0,
-    selectedSpentViaCategoryIndex: Int = 0,
+    selectedExpenseCategoryName: String = "",
+    selectedDebitCategoryName: String = "",
+    selectedSpentViaCategoryName: String = "",
     title: String = "",
     chipType: ChipType,
-    onExpenseChipSelected: ((Int) -> Unit)? = null,
-    onDebitChipSelected: ((Int) -> Unit)? = null,
-    onSpentViaChipSelected: ((Int) -> Unit)? = null,
+    onExpenseChipSelected: ((String) -> Unit)? = null,
+    onDebitChipSelected: ((String) -> Unit)? = null,
+    onSpentViaChipSelected: ((String) -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -327,7 +370,7 @@ fun HorizontalChipSlider(
         ) {
             when (chipType) {
                 is ChipType.DebitedCategory -> {
-                    DebitedCategory.entries.forEachIndexed { index,debitedCategory ->
+                    DebitedCategory.entries.forEachIndexed { index, debitedCategory ->
                         Box(
                             modifier = Modifier
                                 .wrapContentHeight()
@@ -336,10 +379,11 @@ fun HorizontalChipSlider(
                                 .background(color = AppTheme.colors.cardBackground)
                                 .border(
                                     width = 1.dp,
-                                    color = if (index == selectedDebitCategoryIndex) AppTheme.colors.incomeGreen else AppTheme.colors.cardBackground,
+                                    color = if (debitedCategory.type == selectedDebitCategoryName) AppTheme.colors.incomeGreen else AppTheme.colors.cardBackground,
                                     shape = RoundedCornerShape(50)
-                                ).clickable{
-                                    onDebitChipSelected?.invoke(index)
+                                )
+                                .clickable {
+                                    onDebitChipSelected?.invoke(debitedCategory.type)
                                 },
                             contentAlignment = Alignment.Center
                         ) {
@@ -349,7 +393,7 @@ fun HorizontalChipSlider(
                                 text = debitedCategory.type,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = 14.sp,
-                                color = if (index == selectedDebitCategoryIndex) AppTheme.colors.incomeGreen else AppTheme.colors.textPrimary
+                                color = if (debitedCategory.type == selectedDebitCategoryName) AppTheme.colors.incomeGreen else AppTheme.colors.textPrimary
                             )
 
                         }
@@ -366,10 +410,11 @@ fun HorizontalChipSlider(
                                 .background(color = AppTheme.colors.cardBackground)
                                 .border(
                                     width = 1.dp,
-                                    color = if (index == selectedExpenseCategoryIndex) AppTheme.colors.incomeGreen else AppTheme.colors.cardBackground,
+                                    color = if (expenseCategory.type == selectedExpenseCategoryName) AppTheme.colors.incomeGreen else AppTheme.colors.cardBackground,
                                     shape = RoundedCornerShape(50)
-                                ).clickable{
-                                    onExpenseChipSelected?.invoke(index)
+                                )
+                                .clickable {
+                                    onExpenseChipSelected?.invoke(expenseCategory.type)
                                 },
                             contentAlignment = Alignment.Center
                         ) {
@@ -379,7 +424,7 @@ fun HorizontalChipSlider(
                                 text = expenseCategory.type,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = 14.sp,
-                                color = if (index == selectedExpenseCategoryIndex) AppTheme.colors.incomeGreen else AppTheme.colors.textPrimary
+                                color = if (expenseCategory.type == selectedExpenseCategoryName) AppTheme.colors.incomeGreen else AppTheme.colors.textPrimary
                             )
 
                         }
@@ -396,10 +441,11 @@ fun HorizontalChipSlider(
                                 .background(color = AppTheme.colors.cardBackground)
                                 .border(
                                     width = 1.dp,
-                                    color = if (index == selectedSpentViaCategoryIndex) AppTheme.colors.incomeGreen else AppTheme.colors.cardBackground,
+                                    color = if (spentViaCategory.type == selectedSpentViaCategoryName) AppTheme.colors.incomeGreen else AppTheme.colors.cardBackground,
                                     shape = RoundedCornerShape(50)
-                                ).clickable{
-                                    onSpentViaChipSelected?.invoke(index)
+                                )
+                                .clickable {
+                                    onSpentViaChipSelected?.invoke(spentViaCategory.type)
                                 },
                             contentAlignment = Alignment.Center
                         ) {
@@ -409,7 +455,7 @@ fun HorizontalChipSlider(
                                 text = spentViaCategory.type,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = 14.sp,
-                                color = if (index == selectedSpentViaCategoryIndex) AppTheme.colors.incomeGreen else AppTheme.colors.textPrimary
+                                color = if (spentViaCategory.type == selectedSpentViaCategoryName) AppTheme.colors.incomeGreen else AppTheme.colors.textPrimary
                             )
                         }
                     }
@@ -424,8 +470,11 @@ fun HorizontalChipSlider(
 fun DatePickerRow(
     modifier: Modifier = Modifier,
     isDatePickerVisible: Boolean = false,
-    onPositiveButtonClicked: (String) -> Unit,
-    onNegativeButtonClicked : () -> Unit
+    dayText: String = "",
+    monthText: String = "",
+    yearText: String = "",
+    onPositiveButtonClicked: (String, Long) -> Unit,
+    onNegativeButtonClicked: () -> Unit,
 ) {
 
     Column(
@@ -448,7 +497,7 @@ fun DatePickerRow(
                 imageVector = Icons.Default.DateRange,
                 modifier = Modifier
                     .size(24.dp)
-                    .clickable{
+                    .clickable {
                         onNegativeButtonClicked.invoke()
                     },
                 contentDescription = null,
@@ -463,7 +512,7 @@ fun DatePickerRow(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "day",
+                    text = dayText,
                     fontSize = 14.sp,
                     color = AppTheme.colors.textPrimary,
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
@@ -478,7 +527,7 @@ fun DatePickerRow(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Month",
+                    text = monthText,
                     fontSize = 14.sp,
                     color = AppTheme.colors.textPrimary,
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
@@ -493,7 +542,7 @@ fun DatePickerRow(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "year",
+                    text = yearText,
                     fontSize = 14.sp,
                     color = AppTheme.colors.textPrimary,
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
@@ -515,14 +564,16 @@ fun DatePickerRow(
             containerColor = AppTheme.colors.background
         ),
         onDismissRequest = {
-           onNegativeButtonClicked.invoke()
+            onNegativeButtonClicked.invoke()
         },
         confirmButton = {
             TextButton(
                 onClick = {
-                    datePickerState.selectedDateMillis?.let { it->
+                    datePickerState.selectedDateMillis?.let { it ->
+                        println("${Date(it)}")
                         onPositiveButtonClicked.invoke(
-                            "${Date(it)}"
+                            "${Date(it)}",
+                            it
                         )
                     }
                 }
@@ -562,8 +613,6 @@ fun DatePickerRow(
             )
         )
     }
-
-
 }
 
 @Composable

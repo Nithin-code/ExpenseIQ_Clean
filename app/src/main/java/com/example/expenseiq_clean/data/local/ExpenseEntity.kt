@@ -12,5 +12,6 @@ data class ExpenseEntity(
     val toAccount: String,
     val isCredited: Boolean,
     val date : String,
-    val category: String
+    val category: String,
+    val dateMillis: Long
 )

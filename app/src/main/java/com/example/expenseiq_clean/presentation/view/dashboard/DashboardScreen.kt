@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,12 +17,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -60,19 +63,38 @@ fun DashboardScreen(
         floatingActionButton = {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(shape = CircleShape)
-                    .background(color = AppTheme.colors.cardBackground)
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+                    .clip(shape = RoundedCornerShape(50))
                     .clickable{
                         onAddButtonClicked.invoke()
                     }
+                    .background(
+                        color = AppTheme.colors.cardBackground,
+                    ).border(
+                        width = 0.5.dp,
+                        color = AppTheme.colors.incomeGreen,
+                        shape = RoundedCornerShape(50)
+                    ),
+                contentAlignment = Alignment.Center
             ){
-                Icon(
-                    painter = painterResource(R.drawable.add_icon_24),
-                    contentDescription = null,
-                    modifier = Modifier.align(Alignment.Center),
-                    tint = AppTheme.colors.textPrimary
-                )
+                Row(
+                    modifier = Modifier.padding(
+                        8.dp
+                    )
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.add_icon_24),
+                        contentDescription = null,
+                        tint = AppTheme.colors.textPrimary
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Add",
+                        color = AppTheme.colors.incomeGreen,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -323,7 +345,8 @@ fun TransactionDetail(
         toAccount = "SBI",
         isCredited = false,
         date = "",
-        category = ""
+        category = "",
+        dateMillis = 0L
     )
 ){
 
@@ -377,12 +400,12 @@ fun TransactionDetail(
                 .padding(vertical = 4.dp)
         ) {
             Text(
-                text = "ICICI Bank",
+                text = expense.fromAccount,
                 fontSize = 16.sp,
                 color = AppTheme.colors.textPrimary
             )
             Text(
-                text = "Axis Bank",
+                text = expense.toAccount,
                 fontSize = 16.sp,
                 color = AppTheme.colors.textPrimary
             )

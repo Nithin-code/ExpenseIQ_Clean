@@ -9,7 +9,8 @@ fun Expense.toExpenseEntity() = ExpenseEntity(
     toAccount = this.toAccount,
     isCredited = this.isCredited,
     date = this.date,
-    category = this.category
+    category = this.category,
+    dateMillis = this.dateMillis
 )
 
 fun ExpenseEntity.toExpense() = Expense(
@@ -18,5 +19,6 @@ fun ExpenseEntity.toExpense() = Expense(
     toAccount = this.toAccount,
     isCredited = this.isCredited,
     date = this.date,
-    category = this.category
+    category = this.category,
+    dateMillis = this.dateMillis
 )
