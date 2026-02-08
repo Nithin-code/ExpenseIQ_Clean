@@ -1,6 +1,6 @@
 package com.example.expenseiq_clean.presentation.view.dashboard
 
-import androidx.compose.animation.AnimatedContent
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expenseiq_clean.R
 import com.example.expenseiq_clean.domain.model.Expense
+import com.example.expenseiq_clean.presentation.view.components.ExpenseDetailsCard
 import com.example.expenseiq_clean.presentation.viewmodel.dashboard.DashBoardViewModel
 import com.example.expenseiq_clean.ui.theme.AppTheme
 import org.koin.androidx.compose.koinViewModel
@@ -313,8 +314,12 @@ fun MiniStatementList(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             itemsIndexed(expenseList) { index,item ->
-                TransactionDetail(
-                    expense = item
+                ExpenseDetailsCard(
+                    toAccount = item.toAccount,
+                    fromAccount = item.fromAccount,
+                    spentOn = item.date,
+                    amount = item.amount,
+                    isDebit = !item.isCredited
                 )
             }
         }

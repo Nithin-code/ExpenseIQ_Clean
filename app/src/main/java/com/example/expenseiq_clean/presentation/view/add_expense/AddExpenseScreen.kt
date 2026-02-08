@@ -1,12 +1,7 @@
 package com.example.expenseiq_clean.presentation.view.add_expense
 
-import android.graphics.drawable.Icon
+
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
@@ -29,20 +23,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
@@ -50,27 +40,21 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.expenseiq_clean.R
 import com.example.expenseiq_clean.domain.model.ChipType
 import com.example.expenseiq_clean.domain.model.DebitedCategory
 import com.example.expenseiq_clean.domain.model.ExpenseCategory
 import com.example.expenseiq_clean.domain.model.SpentViaCategory
+import com.example.expenseiq_clean.presentation.model.add_expense.AddExpenseUIEvent
 import com.example.expenseiq_clean.presentation.viewmodel.add_expense.AddExpenseViewModel
 import com.example.expenseiq_clean.ui.theme.AppTheme
 import org.koin.androidx.compose.koinViewModel
@@ -79,14 +63,13 @@ import java.util.Date
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddExpenseScreen(
-    onBackArrowClicked: () -> Unit
+    viewModel: AddExpenseViewModel
 ) {
-
-    val viewModel = koinViewModel<AddExpenseViewModel>()
 
     val screenState = viewModel
         .addExpenseScreenUIState
         .collectAsStateWithLifecycle()
+
 
     Scaffold(
         topBar = {
@@ -102,7 +85,7 @@ fun AddExpenseScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            onBackArrowClicked.invoke()
+                            viewModel.onBackButtonClicked()
                         }
                     ) {
                         Icon(
@@ -262,11 +245,7 @@ fun AddExpenseScreen(
                         .clip(shape = RoundedCornerShape(12.dp))
                         .background(color = AppTheme.colors.incomeGreen)
                         .clickable {
-                            viewModel.onSaveButtonClicked(
-                                navigateBack = {
-                                    onBackArrowClicked.invoke()
-                                }
-                            )
+                            viewModel.onSaveButtonClicked()
                         },
                     contentAlignment = Alignment.Center
                 ) {
@@ -618,5 +597,5 @@ fun DatePickerRow(
 @Composable
 @Preview(showBackground = true)
 fun AddExpensePreview() {
-    AddExpenseScreen(onBackArrowClicked = {})
+    AddExpenseScreen(viewModel = koinViewModel<AddExpenseViewModel>())
 }

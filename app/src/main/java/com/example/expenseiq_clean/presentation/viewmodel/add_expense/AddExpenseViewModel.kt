@@ -9,7 +9,9 @@ import com.example.expenseiq_clean.domain.model.ExpenseCategory
 import com.example.expenseiq_clean.domain.model.SpentViaCategory
 import com.example.expenseiq_clean.domain.repository.ExpenseRepository
 import com.example.expenseiq_clean.presentation.model.add_expense.AddExpenseScreenState
+import com.example.expenseiq_clean.presentation.model.add_expense.AddExpenseUIEvent
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -23,6 +25,13 @@ class AddExpenseViewModel(
     private val _addExpenseScreenUIState = MutableStateFlow(
         value = AddExpenseScreenState()
     )
+
+    private val _navigationEvent = MutableSharedFlow<AddExpenseUIEvent>(
+        replay = 0,
+        extraBufferCapacity = 1
+    )
+
+    val navigationEvent = _navigationEvent
 
     val addExpenseScreenUIState = _addExpenseScreenUIState
 
@@ -109,9 +118,7 @@ class AddExpenseViewModel(
         }
     }
 
-    fun onSaveButtonClicked(
-        navigateBack: () -> Unit
-    ) {
+    fun onSaveButtonClicked() {
         viewModelScope.launch {
             val state = _addExpenseScreenUIState.value
             try {
@@ -127,7 +134,7 @@ class AddExpenseViewModel(
                             dateMillis = state.selectedDateMillis
                         )
                     )
-                    navigateBack.invoke()
+                    _navigationEvent.emit(AddExpenseUIEvent.OnSaveButtonClick)
                 } else {
                     displayAutoHideErrorBanner()
                 }
@@ -156,6 +163,12 @@ class AddExpenseViewModel(
 
     fun isValidExpanse(expense: AddExpenseScreenState): Boolean {
         return expense.selectedDateMillis != 0L && expense.enteredAmount.toDoubleOrNull() != null
+    }
+
+    fun onBackButtonClicked(){
+        viewModelScope.launch {
+            _navigationEvent.emit(AddExpenseUIEvent.OnBackClicked)
+        }
     }
 
 }
