@@ -7,7 +7,9 @@ import com.example.expenseiq_clean.domain.repository.ExpenseRepository
 import com.example.expenseiq_clean.domain.utils.CommonUtils
 import com.example.expenseiq_clean.domain.utils.CommonUtils.toReadableAmount
 import com.example.expenseiq_clean.domain.utils.CommonUtils.toReadableDate
+import com.example.expenseiq_clean.domain.utils.Result
 import com.example.expenseiq_clean.presentation.model.dashbaord.DashBoardScreenUIState
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.onStart
@@ -35,16 +37,29 @@ class DashBoardViewModel(
 
     private fun getTotalExpenses() {
         viewModelScope.launch {
-            expenseRepository.getTotalExpenses().collect { value ->
-                val totalAmount = value.sumOf { it.amount }
-                _dashboardScreenState.update { state->
-                    state.copy(
-                        currentDate = "",
-                        totalAmount = totalAmount.toReadableAmount(),
-                        topExpensesList = value.map { it.copy(date = it.date.toReadableDate()) }
-                    )
+            when (val result = expenseRepository.getTotalExpenses()) {
+                is Result.Success<Flow<List<Expense>>> -> {
+                    result.data.collect { value ->
+                        val totalAmount = value.sumOf { it.amount }
+                        _dashboardScreenState.update { state ->
+                            state.copy(
+                                currentDate = "",
+                                totalAmount = totalAmount.toReadableAmount(),
+                                topExpensesList = value.map { it.copy(date = it.date.toReadableDate()) }
+                            )
+                        }
+                    }
+                }
+
+                is Result.Error -> {
+
+                }
+
+                is Result.Loading -> {
+
                 }
             }
+
         }
     }
 }

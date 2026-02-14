@@ -8,6 +8,7 @@ import com.example.expenseiq_clean.domain.model.Expense
 import com.example.expenseiq_clean.domain.model.ExpenseCategory
 import com.example.expenseiq_clean.domain.model.SpentViaCategory
 import com.example.expenseiq_clean.domain.repository.ExpenseRepository
+import com.example.expenseiq_clean.domain.utils.Result
 import com.example.expenseiq_clean.presentation.model.add_expense.AddExpenseScreenState
 import com.example.expenseiq_clean.presentation.model.add_expense.AddExpenseUIEvent
 import kotlinx.coroutines.delay
@@ -40,6 +41,26 @@ class AddExpenseViewModel(
             _addExpenseScreenUIState.update { state ->
                 state.copy(
                     enteredAmount = amount
+                )
+            }
+        }
+    }
+
+    fun onAccountSpentFromChange(reason: String){
+        viewModelScope.launch {
+            _addExpenseScreenUIState.update { state ->
+                state.copy(
+                    otherAccountSpentFromDescription = reason
+                )
+            }
+        }
+    }
+
+    fun onAccountSpentToChange(reason: String){
+        viewModelScope.launch {
+            _addExpenseScreenUIState.update { state ->
+                state.copy(
+                    otherAccountSpentToDescription = reason
                 )
             }
         }
@@ -123,7 +144,7 @@ class AddExpenseViewModel(
             val state = _addExpenseScreenUIState.value
             try {
                 if (isValidExpanse(state)) {
-                    repository.addExpense(
+                    val result = repository.addExpense(
                         Expense(
                             amount = if (state.enteredAmount.toDoubleOrNull() == null) 0.0 else state.enteredAmount.toDouble(),
                             fromAccount = state.selectedSpentVia,
@@ -134,7 +155,17 @@ class AddExpenseViewModel(
                             dateMillis = state.selectedDateMillis
                         )
                     )
-                    _navigationEvent.emit(AddExpenseUIEvent.OnSaveButtonClick)
+                    when(result){
+                        is Result.Success<*> -> {
+                            displaySuccessBanner()
+                        }
+                        is Result.Loading -> {
+
+                        }
+                        is Result.Error -> {
+                            displayAutoHideErrorBanner()
+                        }
+                    }
                 } else {
                     displayAutoHideErrorBanner()
                 }
@@ -156,6 +187,22 @@ class AddExpenseViewModel(
             _addExpenseScreenUIState.update { screenState ->
                 screenState.copy(
                     showBanner = false
+                )
+            }
+        }
+    }
+
+    private fun displaySuccessBanner() {
+        viewModelScope.launch {
+            _addExpenseScreenUIState.update { screenState ->
+                screenState.copy(
+                    showSuccessBanner = true
+                )
+            }
+            delay(2000)
+            _addExpenseScreenUIState.update { screenState ->
+                screenState.copy(
+                    showSuccessBanner = false
                 )
             }
         }

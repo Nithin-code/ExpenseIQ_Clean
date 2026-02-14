@@ -137,6 +137,30 @@ fun AddExpenseScreen(
 
             }
 
+            AnimatedVisibility(
+                visible = screenState.value.showSuccessBanner
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = AppTheme.colors.incomeGreen.copy(alpha = 0.8f)
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+
+                    Text(
+                        modifier = Modifier
+                            .padding(vertical = 12.dp),
+                        text = "Added Expense Successfully",
+                        fontSize = 16.sp,
+                        color = AppTheme.colors.textPrimary
+                    )
+                }
+
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -173,9 +197,9 @@ fun AddExpenseScreen(
                 ) {
                     CustomEditText(
                         title = "Amount Send To: ",
-                        amountEntered = screenState.value.enteredAmount,
+                        amountEntered = screenState.value.otherAccountSpentToDescription,
                         onAmountChanged = { it ->
-                            viewModel.onAmountChange(it)
+                            viewModel.onAccountSpentToChange(it)
                         },
                         label = "Name",
                         keyboardOptions = KeyboardOptions.Default.copy(
@@ -227,9 +251,9 @@ fun AddExpenseScreen(
                 ) {
                     CustomEditText(
                         title = "Amount Sent From: ",
-                        amountEntered = screenState.value.enteredAmount,
+                        amountEntered = screenState.value.otherAccountSpentFromDescription,
                         onAmountChanged = { it ->
-                            viewModel.onAmountChange(it)
+                            viewModel.onAccountSpentFromChange(reason = it)
                         },
                         label = "Name",
                         keyboardOptions = KeyboardOptions.Default.copy(
